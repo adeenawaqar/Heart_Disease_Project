@@ -1,6 +1,5 @@
 streamlit
-numpy
-scikit-learn
 joblib
-xgboost
+numpy
 pandas
+scikit-learn
