@@ -1,59 +1,80 @@
-from flask import Flask, render_template, request
+import streamlit as st
 import numpy as np
 import joblib
 
-app = Flask(__name__)
-
+# ===========================
 # Load Model & Scaler
+# ===========================
+
 model = joblib.load("heart_disease_model.pkl")
 scaler = joblib.load("scaler.pkl")
 
+# ===========================
+# Title
+# ===========================
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+st.set_page_config(page_title="Heart Disease Prediction", page_icon="❤️")
 
+st.title("❤️ Heart Disease Prediction")
+st.write("Enter the patient details below and click Predict.")
 
-@app.route("/predict", methods=["POST"])
-def predict():
+# ===========================
+# User Inputs
+# ===========================
 
-    try:
+Age = st.number_input("Age", min_value=1, max_value=120, value=30)
 
-        features = [
+Sex = st.selectbox("Sex", [0, 1])
 
-            float(request.form["Age"]),
-            float(request.form["Sex"]),
-            float(request.form["Chest_pain_type"]),
-            float(request.form["BP"]),
-            float(request.form["Cholesterol"]),
-            float(request.form["FBS_over_120"]),
-            float(request.form["EKG_results"]),
-            float(request.form["Max_HR"]),
-            float(request.form["Exercise_angina"]),
-            float(request.form["ST_depression"]),
-            float(request.form["Slope_ST"]),
-            float(request.form["Number_of_vessels_fluro"]),
-            float(request.form["Thallium"])
+Chest_pain_type = st.selectbox("Chest Pain Type", [1, 2, 3, 4])
 
-        ]
+BP = st.number_input("Resting Blood Pressure", value=120)
 
-        features = np.array(features).reshape(1, -1)
+Cholesterol = st.number_input("Cholesterol", value=200)
 
-        # Scaling
-        features = scaler.transform(features)
+FBS_over_120 = st.selectbox("Fasting Blood Sugar > 120", [0, 1])
 
-        prediction = model.predict(features)
+EKG_results = st.selectbox("EKG Results", [0, 1, 2])
 
-        if prediction[0] == 1:
-            result = "Heart Disease Detected"
-        else:
-            result = "No Heart Disease"
+Max_HR = st.number_input("Maximum Heart Rate", value=150)
 
-        return render_template("index.html", prediction_text=result)
+Exercise_angina = st.selectbox("Exercise Induced Angina", [0, 1])
 
-    except Exception as e:
-        return render_template("index.html", prediction_text=str(e))
+ST_depression = st.number_input("ST Depression", value=1.0)
 
+Slope_ST = st.selectbox("Slope of ST Segment", [1, 2, 3])
 
-if __name__ == "__main__":
-    app.run(debug=True)
+Number_of_vessels_fluro = st.selectbox("Number of Major Vessels", [0, 1, 2, 3])
+
+Thallium = st.selectbox("Thallium", [3, 6, 7])
+
+# ===========================
+# Prediction
+# ===========================
+
+if st.button("Predict"):
+
+    features = np.array([[
+        Age,
+        Sex,
+        Chest_pain_type,
+        BP,
+        Cholesterol,
+        FBS_over_120,
+        EKG_results,
+        Max_HR,
+        Exercise_angina,
+        ST_depression,
+        Slope_ST,
+        Number_of_vessels_fluro,
+        Thallium
+    ]])
+
+    features = scaler.transform(features)
+
+    prediction = model.predict(features)
+
+    if prediction[0] == 1:
+        st.error("⚠️ Heart Disease Detected")
+    else:
+        st.success("✅ No Heart Disease Detected")
